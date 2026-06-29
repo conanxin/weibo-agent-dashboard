@@ -25,13 +25,19 @@
 - README screenshot placeholders replaced with captured mock demo screenshots.
 - Screenshot capture script added for repeatable showcase updates.
 
+## v0.3.0 Tencent Cloud Lite
+
+- Minimal Tencent Cloud Ubuntu deployment path.
+- Full backend mode with Fastify, SQLite, and static frontend serving.
+- Server health check script for quick deployment verification.
+- Real Weibo CLI remains reserved for probe-based calibration.
+
 ## Next
 
 - Adapt whitelist commands to the exact official Weibo CLI command shape.
 - Add import/export for local archive portability.
 - Improve Chinese keyword extraction.
 - Add richer draft templates.
-- Add a GitHub Pages static demo build.
 
 ## Later
 

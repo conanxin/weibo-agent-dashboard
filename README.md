@@ -41,7 +41,7 @@ Drafts:
 | --- | --- | --- | --- | --- |
 | Mock Demo | GitHub Pages or local Vite | Built-in mock data | No | Public showcase |
 | Local Server | Your machine | Mock data or local SQLite | Yes | Full local workflow |
-| Tencent Cloud | Personal server | SQLite + Weibo CLI | Yes | Future private deployment |
+| Tencent Cloud | Personal Ubuntu server | Fastify + SQLite + static frontend | Yes | Full backend mode |
 | Real Weibo CLI | Local/Tencent backend | Official Weibo CLI | Yes | Read-only smoke testing |
 
 ## Architecture
@@ -233,11 +233,36 @@ v0.2.2 adds real README screenshots captured from the static mock demo:
 npm run screenshots
 ```
 
-## Tencent Cloud
+## Tencent Cloud Lite (v0.3.0)
 
-The full backend version can later run on a small Tencent Cloud server. See [docs/DEPLOY_TENCENT_CLOUD.md](docs/DEPLOY_TENCENT_CLOUD.md).
+GitHub Pages = Static Mock Demo. Tencent Cloud = Full backend mode.
 
-This project intentionally avoids Docker, Nginx, HTTPS, backups, and rollback workflows for v0.2.x.
+Shortest server path:
+
+```bash
+git clone https://github.com/conanxin/weibo-agent-dashboard.git
+cd weibo-agent-dashboard
+cp .env.example .env
+npm install
+npm run build
+npm run start
+```
+
+Then open:
+
+```text
+http://SERVER_IP:3000
+```
+
+Health check:
+
+```bash
+npm run check:server-health
+```
+
+See [docs/DEPLOY_TENCENT_CLOUD.md](docs/DEPLOY_TENCENT_CLOUD.md).
+
+This project intentionally avoids Docker, Nginx, HTTPS, backups, and rollback workflows for v0.3.x.
 
 ## Security Notes
 
@@ -255,10 +280,10 @@ This project intentionally avoids Docker, Nginx, HTTPS, backups, and rollback wo
 | v0.1.1 | Open-source showcase + GitHub Pages demo | Complete |
 | v0.2.0 | Real Weibo CLI read-only smoke test | Complete |
 | v0.2.1 | Public demo health and GitHub Pages hardening | Complete |
-| v0.2.2 | Showcase screenshots | Current |
-| v0.3.0 | Tencent Cloud deployment | Planned |
-| v0.4.0 | AI draft enhancement | Planned |
-| v0.5.0 | Hermes / OpenClaw Agent workflow integration | Planned |
+| v0.2.2 | Showcase screenshots | Complete |
+| v0.3.0 | Tencent Cloud Lite deployment | Current |
+| v0.4.0 | Real Weibo CLI calibration | Planned |
+| v0.5.0 | AI draft enhancement / content intelligence | Planned |
 
 See [docs/ROADMAP.md](docs/ROADMAP.md).
 

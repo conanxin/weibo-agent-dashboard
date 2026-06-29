@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.0
+
+- Added Tencent Cloud lite deployment script.
+- Added server health check script.
+- Expanded Tencent Cloud deployment documentation.
+- Added startup logging for server URL, mock mode, and database path.
+
 ## v0.2.2
 
 - Added showcase screenshots.
