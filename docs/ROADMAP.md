@@ -14,6 +14,12 @@
 - GitHub Pages static demo using `VITE_MOCK_MODE=1`.
 - MIT License and changelog.
 
+## v0.2.1 Public Demo Health
+
+- Explicit GitHub Pages base path through `VITE_BASE_PATH`.
+- Public demo health check script.
+- Dashboard and Settings make static mock mode visible.
+
 ## Next
 
 - Adapt whitelist commands to the exact official Weibo CLI command shape.

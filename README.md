@@ -1,8 +1,11 @@
 # Weibo Agent Dashboard
 
-Free-first personal Weibo content workspace powered by a whitelisted Weibo CLI bridge.
+Free-first Weibo CLI personal content dashboard for archive, analytics, and draft generation.
 
-Weibo Agent Dashboard is a small open-source starter for syncing your own Weibo posts, archiving them locally, reviewing lightweight analytics, and generating draft posts for manual copy/paste publishing. The project is intentionally mock-first so the web UI and GitHub Pages demo can run without a Weibo account.
+Weibo Agent Dashboard is a small personal open-source project for syncing your own Weibo posts, archiving them locally, reviewing lightweight analytics, and generating draft posts for manual copy/paste publishing. It is mock-first for public demos and read-only for real CLI smoke testing.
+
+- Repository: https://github.com/conanxin/weibo-agent-dashboard
+- Live Demo: https://conanxin.github.io/weibo-agent-dashboard/
 
 ## Screenshots
 
@@ -36,64 +39,18 @@ Drafts:
 - Fastify API server for local full-stack use.
 - SQLite local archive for synced posts, generated drafts, and sync logs.
 - Whitelisted Weibo CLI bridge only: no arbitrary shell execution.
-- Mock mode for demos, development, and GitHub Pages.
+- Mock mode for demos, development, CI, and GitHub Pages.
 - Free Mode posture: low-frequency calls, current-user data only, no auto-publishing.
 - JSON and Markdown export from the local post archive.
 
-## Real CLI Smoke Test (v0.2.0)
+## Runtime Modes
 
-The project includes a probe script to detect your local `weibo-cli` installation and test which commands are available.
-
-```bash
-npm run probe:weibo-cli
-```
-
-This will output:
-- Whether `weibo-cli` is installed
-- Which commands are available
-- Which commands require authentication
-- Recommended next steps
-
-### Switching to Real CLI Mode
-
-1. Ensure `weibo-cli` is installed and authenticated:
-   ```bash
-   weibo-cli login
-   ```
-
-2. Copy `.env.example` to `.env` and set:
-   ```env
-   MOCK_WEIBO=0
-   FREE_MODE=1
-   ```
-
-3. Run the probe to verify commands:
-   ```bash
-   npm run probe:weibo-cli
-   ```
-
-4. Start the server:
-   ```bash
-   npm run build
-   npm run start
-   ```
-
-### Important Constraints (v0.2.0)
-
-- **Read-only**: Only fetches your own data. Never posts, comments, or reposts.
-- **Free mode**: Respects the 4 calls/hour limit.
-- **Graceful degradation**: If CLI is not installed or not authenticated, the dashboard shows clear errors instead of crashing.
-- **Mock preserved**: `MOCK_WEIBO=1` continues to work exactly as before.
-
-### Adapting to Your CLI Version
-
-If the probe shows different command shapes, edit the mapping in:
-
-```
-packages/weibo-bridge/src/index.ts
-```
-
-Find the `REAL_CLI_COMMANDS` object and adjust the `args` arrays. See [docs/WEIBO_CLI_ADAPTER.md](docs/WEIBO_CLI_ADAPTER.md) for details.
+| Mode | Where it runs | Data source | Backend required | Intended use |
+| --- | --- | --- | --- | --- |
+| Mock Demo | GitHub Pages or local Vite | Built-in mock data | No | Public showcase |
+| Local Server | Your machine | Mock data or local SQLite | Yes | Full local workflow |
+| Tencent Cloud | Personal server | SQLite + Weibo CLI | Yes | Future private deployment |
+| Real Weibo CLI | Local/Tencent backend | Official Weibo CLI | Yes | Read-only smoke testing |
 
 ## Architecture
 
@@ -146,7 +103,7 @@ Then open `http://localhost:3000`.
 
 ## Mock Mode
 
-The backend mock mode is enabled in `.env.example`:
+Backend mock mode is enabled in `.env.example`:
 
 ```env
 MOCK_WEIBO=1
@@ -155,13 +112,39 @@ FREE_MODE=1
 
 Copy `.env.example` to `.env` for local backend use. When `MOCK_WEIBO=1`, the server never calls the real Weibo CLI and returns sample user/post data.
 
-The frontend static demo mode is controlled by:
+Frontend static demo mode is controlled by:
 
 ```env
 VITE_MOCK_MODE=1
 ```
 
-When `VITE_MOCK_MODE=1`, `apps/web` does not call the backend at all. It renders built-in mock status, posts, analytics, and draft generation data.
+When `VITE_MOCK_MODE=1`, `apps/web` does not call the backend. It renders built-in mock status, posts, analytics, and draft generation data.
+
+## GitHub Pages Static Demo
+
+GitHub Pages can only run the mock demo because it is a static hosting environment. It cannot run the Fastify server, create or read SQLite databases, access local `.env` files, or execute `weibo-cli`.
+
+The Pages workflow builds only `apps/web` with:
+
+```env
+VITE_MOCK_MODE=1
+VITE_BASE_PATH=/weibo-agent-dashboard/
+```
+
+This produces a static demo for:
+
+```text
+https://conanxin.github.io/weibo-agent-dashboard/
+```
+
+Manual local static demo:
+
+```powershell
+$env:VITE_MOCK_MODE="1"
+npm run dev -w apps/web
+```
+
+Open `http://localhost:5173`.
 
 ## Free Mode
 
@@ -177,32 +160,84 @@ The project assumes a conservative free-tier posture:
 
 See [docs/FREE_MODE.md](docs/FREE_MODE.md).
 
-## GitHub Pages Static Demo
+## Real CLI Smoke Test (v0.2.0)
 
-GitHub Pages should publish only the static web demo. It does not need the Fastify server, SQLite, Weibo credentials, or the Weibo CLI.
+The project includes a probe script to detect your local `weibo-cli` installation and test which commands are available:
 
-The included GitHub Actions workflow builds `apps/web` with:
+```bash
+npm run probe:weibo-cli
+```
+
+This outputs:
+
+- Whether `weibo-cli` is installed.
+- Which commands are available.
+- Which commands require authentication.
+- Whether commands return JSON or raw text.
+- Recommended next steps.
+
+Switching to real CLI mode:
+
+1. Install and authenticate the official Weibo CLI:
+
+```bash
+weibo-cli login
+```
+
+2. Copy `.env.example` to `.env` and set:
 
 ```env
-VITE_MOCK_MODE=1
+MOCK_WEIBO=0
+FREE_MODE=1
 ```
 
-If the repository is named `weibo-agent-dashboard`, Vite uses `/weibo-agent-dashboard/` as the asset base during GitHub Actions builds.
+3. Run the probe:
 
-Manual local static demo:
-
-```powershell
-$env:VITE_MOCK_MODE="1"
-npm run dev -w apps/web
+```bash
+npm run probe:weibo-cli
 ```
 
-Open `http://localhost:5173`.
+4. Start the server:
+
+```bash
+npm run build
+npm run start
+```
+
+v0.2.0 remains read-only. It does not post, comment, repost, search the public network, fetch hot searches, or monitor competitor accounts.
+
+## CLI Command Calibration
+
+The current real CLI commands are assumptions. They must be calibrated against the official CLI available on your machine.
+
+Run:
+
+```bash
+npm run probe:weibo-cli
+```
+
+Then update `REAL_CLI_COMMANDS` in:
+
+```text
+packages/weibo-bridge/src/index.ts
+```
+
+See [docs/WEIBO_CLI_ADAPTER.md](docs/WEIBO_CLI_ADAPTER.md).
+
+## Public Demo Health (v0.2.1)
+
+v0.2.1 hardens the public demo path:
+
+- Explicit GitHub Pages base path support through `VITE_BASE_PATH`.
+- Pages workflow uses `VITE_MOCK_MODE=1`.
+- Dashboard and Settings clearly identify GitHub Pages as Mock Demo mode.
+- `npm run check:public-demo` verifies README links, dist files, asset references, and Pages workflow settings without network access.
 
 ## Tencent Cloud
 
 The full backend version can later run on a small Tencent Cloud server. See [docs/DEPLOY_TENCENT_CLOUD.md](docs/DEPLOY_TENCENT_CLOUD.md).
 
-This project intentionally avoids Docker, Nginx, HTTPS, backups, and rollback workflows for v0.1.x.
+This project intentionally avoids Docker, Nginx, HTTPS, backups, and rollback workflows for v0.2.x.
 
 ## Security Notes
 
@@ -215,10 +250,11 @@ This project intentionally avoids Docker, Nginx, HTTPS, backups, and rollback wo
 ## Roadmap
 
 | Version | Goal | Status |
-|---------|------|--------|
-| v0.1.0 | Mock-first local MVP | ✅ Complete |
-| v0.1.1 | Open-source showcase + GitHub Pages demo | ✅ Complete |
-| v0.2.0 | Real Weibo CLI read-only smoke test | ✅ Current |
+| --- | --- | --- |
+| v0.1.0 | Mock-first local MVP | Complete |
+| v0.1.1 | Open-source showcase + GitHub Pages demo | Complete |
+| v0.2.0 | Real Weibo CLI read-only smoke test | Complete |
+| v0.2.1 | Public demo health and GitHub Pages hardening | Current |
 | v0.3.0 | Tencent Cloud deployment | Planned |
 | v0.4.0 | AI draft enhancement | Planned |
 | v0.5.0 | Hermes / OpenClaw Agent workflow integration | Planned |

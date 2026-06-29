@@ -5,7 +5,10 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig(() => {
   const repositoryName = process.env.GITHUB_REPOSITORY?.split("/").pop();
-  const base = process.env.GITHUB_ACTIONS === "true" && repositoryName ? `/${repositoryName}/` : "/";
+  const normalizedBasePath = process.env.VITE_BASE_PATH?.trim();
+  const base =
+    normalizedBasePath ||
+    (process.env.GITHUB_ACTIONS === "true" && repositoryName ? `/${repositoryName}/` : "/");
 
   return {
     base,

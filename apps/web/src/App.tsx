@@ -79,8 +79,8 @@ export default function App() {
       setStatus(nextStatus);
       setPosts(nextPosts.posts);
       setSummary(nextSummary);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : String(error));
+  } catch (error) {
+      setMessage(`Unable to load dashboard data. ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setLoading(false);
     }
@@ -159,7 +159,7 @@ export default function App() {
         </section>
 
         {activeTab === "Dashboard" ? (
-          <Dashboard status={status} loading={loading} />
+          <Dashboard status={status} loading={loading} frontendMockMode={frontendMockMode} />
         ) : activeTab === "Posts" ? (
           <Posts posts={posts} search={search} setSearch={setSearch} refreshAll={refreshAll} />
         ) : activeTab === "Analytics" ? (
@@ -174,21 +174,37 @@ export default function App() {
   );
 }
 
-function Dashboard({ status, loading }: { status: WeiboStatus | null; loading: boolean }) {
+function Dashboard({
+  status,
+  loading,
+  frontendMockMode
+}: {
+  status: WeiboStatus | null;
+  loading: boolean;
+  frontendMockMode: boolean;
+}) {
   return (
-    <section className="dashboard-grid">
-      <Metric label="CLI status" value={status?.cli.installed ? "Available" : "Unavailable"} detail={status?.cli.version || status?.cli.error || status?.cli.bin} />
-      <Metric label="Auth status" value={status?.auth.authenticated ? "Signed in" : "Not signed in"} detail={status?.auth.error || (status?.auth.mock ? "mock auth" : "real cli")} />
-      <Metric label="Local posts" value={String(status?.local.postCount ?? 0)} detail="SQLite archive or static mock data" />
-      <Metric label="Last sync" value={formatDate(status?.local.lastSyncAt)} detail="local synced_at" />
-      <Metric label="Calls today" value={String(status?.local.callsToday ?? 0)} detail="sync log count" />
-      <Metric
-        label="Hourly data calls"
-        value={`${status?.rateLimit.used ?? 0}/${status?.rateLimit.limit ?? 4}`}
-        detail={`reset ${formatDate(status?.rateLimit.resetAt)}`}
-      />
-      {loading ? <p className="muted">Refreshing...</p> : null}
-    </section>
+    <div className="content-stack">
+      {frontendMockMode ? (
+        <article className="demo-banner">
+          <strong>GitHub Pages static demo mode</strong>
+          <p>This page uses built-in mock data and will not connect to a real Weibo account or backend server.</p>
+        </article>
+      ) : null}
+      <section className="dashboard-grid">
+        <Metric label="CLI status" value={status?.cli.installed ? "Available" : "Unavailable"} detail={status?.cli.version || status?.cli.error || status?.cli.bin} />
+        <Metric label="Auth status" value={status?.auth.authenticated ? "Signed in" : "Not signed in"} detail={status?.auth.error || (status?.auth.mock ? "mock auth" : "real cli")} />
+        <Metric label="Local posts" value={String(status?.local.postCount ?? 0)} detail="SQLite archive or static mock data" />
+        <Metric label="Last sync" value={formatDate(status?.local.lastSyncAt)} detail="local synced_at" />
+        <Metric label="Calls today" value={String(status?.local.callsToday ?? 0)} detail="sync log count" />
+        <Metric
+          label="Hourly data calls"
+          value={`${status?.rateLimit.used ?? 0}/${status?.rateLimit.limit ?? 4}`}
+          detail={`reset ${formatDate(status?.rateLimit.resetAt)}`}
+        />
+        {loading ? <p className="muted">Refreshing...</p> : null}
+      </section>
+    </div>
   );
 }
 
@@ -372,6 +388,27 @@ function Settings({
           disabled={frontendMockMode}
         />
         {frontendMockMode ? <p>Static mock mode is active, so the browser does not call a backend API.</p> : null}
+      </article>
+      <article className="panel">
+        <h3>Runtime modes</h3>
+        <div className="mode-list">
+          <div>
+            <strong>GitHub Pages</strong>
+            <span>Mock Demo. Static frontend only, no backend, no real Weibo account.</span>
+          </div>
+          <div>
+            <strong>Local Server</strong>
+            <span>Fastify + SQLite backend. Can run mock mode or real CLI mode.</span>
+          </div>
+          <div>
+            <strong>Tencent Cloud</strong>
+            <span>Full backend deployment path for real CLI smoke tests and personal use.</span>
+          </div>
+          <div>
+            <strong>Real Weibo CLI</strong>
+            <span>Read-only backend mode with `MOCK_WEIBO=0`; command mapping may need probe-based calibration.</span>
+          </div>
+        </div>
       </article>
       <article className="panel">
         <h3>Free Mode</h3>

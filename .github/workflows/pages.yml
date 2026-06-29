@@ -35,6 +35,7 @@ jobs:
         run: npm run build -w apps/web
         env:
           VITE_MOCK_MODE: "1"
+          VITE_BASE_PATH: "/weibo-agent-dashboard/"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

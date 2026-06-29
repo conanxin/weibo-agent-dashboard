@@ -227,6 +227,25 @@ input:disabled {
   padding: 12px 14px;
 }
 
+.demo-banner {
+  border: 1px solid #b8d8cc;
+  border-radius: 8px;
+  background: #edf8f4;
+  color: #164f3d;
+  padding: 16px 18px;
+}
+
+.demo-banner strong {
+  display: block;
+  font-size: 15px;
+}
+
+.demo-banner p {
+  margin: 6px 0 0;
+  color: #2a6b55;
+  line-height: 1.55;
+}
+
 .dashboard-grid,
 .summary-strip {
   display: grid;
@@ -353,6 +372,33 @@ pre {
   margin: 0;
   padding-left: 20px;
   line-height: 1.8;
+}
+
+.mode-list {
+  display: grid;
+  gap: 12px;
+}
+
+.mode-list div {
+  display: grid;
+  gap: 4px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.mode-list div:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.mode-list strong {
+  font-size: 14px;
+}
+
+.mode-list span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
 }
 
 .draft-form {
