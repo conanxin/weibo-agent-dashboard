@@ -14,12 +14,14 @@
     "build:web:mock": "npm run build -w apps/web",
     "start": "node apps/server/dist/index.js",
     "lint": "npm run lint --workspaces --if-present",
-    "test:smoke": "npm run build && node scripts/smoke-test.mjs"
+    "test:smoke": "npm run build && node scripts/smoke-test.mjs",
+    "probe:weibo-cli": "node scripts/probe-weibo-cli.mjs"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.62.2",
     "concurrently": "^9.1.2",
     "typescript": "^5.8.3"
   }

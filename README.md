@@ -40,6 +40,61 @@ Drafts:
 - Free Mode posture: low-frequency calls, current-user data only, no auto-publishing.
 - JSON and Markdown export from the local post archive.
 
+## Real CLI Smoke Test (v0.2.0)
+
+The project includes a probe script to detect your local `weibo-cli` installation and test which commands are available.
+
+```bash
+npm run probe:weibo-cli
+```
+
+This will output:
+- Whether `weibo-cli` is installed
+- Which commands are available
+- Which commands require authentication
+- Recommended next steps
+
+### Switching to Real CLI Mode
+
+1. Ensure `weibo-cli` is installed and authenticated:
+   ```bash
+   weibo-cli login
+   ```
+
+2. Copy `.env.example` to `.env` and set:
+   ```env
+   MOCK_WEIBO=0
+   FREE_MODE=1
+   ```
+
+3. Run the probe to verify commands:
+   ```bash
+   npm run probe:weibo-cli
+   ```
+
+4. Start the server:
+   ```bash
+   npm run build
+   npm run start
+   ```
+
+### Important Constraints (v0.2.0)
+
+- **Read-only**: Only fetches your own data. Never posts, comments, or reposts.
+- **Free mode**: Respects the 4 calls/hour limit.
+- **Graceful degradation**: If CLI is not installed or not authenticated, the dashboard shows clear errors instead of crashing.
+- **Mock preserved**: `MOCK_WEIBO=1` continues to work exactly as before.
+
+### Adapting to Your CLI Version
+
+If the probe shows different command shapes, edit the mapping in:
+
+```
+packages/weibo-bridge/src/index.ts
+```
+
+Find the `REAL_CLI_COMMANDS` object and adjust the `args` arrays. See [docs/WEIBO_CLI_ADAPTER.md](docs/WEIBO_CLI_ADAPTER.md) for details.
+
 ## Architecture
 
 ```text
@@ -159,10 +214,14 @@ This project intentionally avoids Docker, Nginx, HTTPS, backups, and rollback wo
 
 ## Roadmap
 
-- v0.1.0: Mock-first local MVP.
-- v0.1.1: Open-source showcase README and GitHub Pages static demo.
-- Next: Adapt the whitelist mapping to the exact official Weibo CLI command shape.
-- Later: Add optional scheduled sync with strict Free Mode intervals.
+| Version | Goal | Status |
+|---------|------|--------|
+| v0.1.0 | Mock-first local MVP | ✅ Complete |
+| v0.1.1 | Open-source showcase + GitHub Pages demo | ✅ Complete |
+| v0.2.0 | Real Weibo CLI read-only smoke test | ✅ Current |
+| v0.3.0 | Tencent Cloud deployment | Planned |
+| v0.4.0 | AI draft enhancement | Planned |
+| v0.5.0 | Hermes / OpenClaw Agent workflow integration | Planned |
 
 See [docs/ROADMAP.md](docs/ROADMAP.md).
 

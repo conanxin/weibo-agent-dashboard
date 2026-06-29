@@ -9,9 +9,12 @@ export type JsonValue =
   | { [key: string]: JsonValue };
 
 export interface CliJsonResult {
+  ok: boolean;
   json: JsonValue | null;
   raw?: string;
   stderr?: string;
+  command: string;
+  error?: string;
 }
 
 export interface WeiboUser {
@@ -45,6 +48,21 @@ const dataRateLimiter = {
   windowStart: Date.now(),
   used: 0
 };
+
+// ─── Real CLI Command Mapping ────────────────────────────────────────────────
+// Adjust these to match the actual weibo-cli command shape on your system.
+// Run `npm run probe:weibo-cli` to discover available commands.
+
+export const REAL_CLI_COMMANDS = {
+  version: { args: ["--version"] },
+  authStatus: { args: ["auth", "status", "--json"] },
+  authWhoami: { args: ["auth", "whoami", "--json"] },
+  currentUser: { args: ["me", "--json"] },
+  myPosts: { args: ["posts", "mine", "--limit", "{limit}", "--json"] },
+  userTimeline: { args: ["user", "timeline", "--limit", "{limit}", "--json"] }
+} as const;
+
+export type RealCliCommandKey = keyof typeof REAL_CLI_COMMANDS;
 
 const mockPosts: WeiboPost[] = [
   {
@@ -128,7 +146,7 @@ export function getRateLimitStatus(): RateLimitStatus {
   };
 }
 
-function parseCliOutput(stdout: string, stderr?: string): CliJsonResult {
+function parseCliOutput(stdout: string, stderr?: string): { json: JsonValue | null; raw?: string; stderr?: string } {
   const trimmed = stdout.trim();
   if (!trimmed) {
     return {
@@ -152,33 +170,56 @@ function parseCliOutput(stdout: string, stderr?: string): CliJsonResult {
   }
 }
 
-type WhitelistedCommand = "version" | "authStatus" | "currentUser" | "myPosts";
-
-function getWhitelistedArgs(command: WhitelistedCommand, limit?: number): string[] {
-  switch (command) {
-    case "version":
-      return ["--version"];
-    case "authStatus":
-      return ["auth", "status", "--json"];
-    case "currentUser":
-      return ["me", "--json"];
-    case "myPosts":
-      return ["posts", "mine", "--limit", String(Math.min(Math.max(Math.trunc(limit ?? 20), 1), 50)), "--json"];
-  }
+function buildArgs(commandKey: RealCliCommandKey, limit?: number): string[] {
+  const template = REAL_CLI_COMMANDS[commandKey].args;
+  return template.map((arg) => {
+    if (arg === "{limit}") {
+      return String(Math.min(Math.max(Math.trunc(limit ?? 20), 1), 50));
+    }
+    return arg;
+  });
 }
 
-async function runWhitelistedCli(command: WhitelistedCommand, limit?: number): Promise<CliJsonResult> {
-  const result = await execa(getWeiboCliBin(), getWhitelistedArgs(command, limit), {
-    reject: false,
-    windowsHide: true
-  });
+export async function runRealCli(commandKey: RealCliCommandKey, limit?: number): Promise<CliJsonResult> {
+  const args = buildArgs(commandKey, limit);
+  const command = `${getWeiboCliBin()} ${args.join(" ")}`;
 
-  const parsed = parseCliOutput(result.stdout, result.stderr);
-  if (result.exitCode !== 0) {
-    const message = parsed.raw || result.stderr || `Weibo CLI command failed with exit code ${result.exitCode}.`;
-    throw new Error(message);
+  try {
+    const result = await execa(getWeiboCliBin(), args, {
+      reject: false,
+      windowsHide: true,
+      timeout: 30000
+    });
+
+    const parsed = parseCliOutput(result.stdout, result.stderr);
+
+    if (result.exitCode !== 0) {
+      const message = parsed.raw || result.stderr || `Weibo CLI command failed with exit code ${result.exitCode}.`;
+      return {
+        ok: false,
+        json: parsed.json,
+        raw: parsed.raw,
+        stderr: parsed.stderr,
+        command,
+        error: message
+      };
+    }
+
+    return {
+      ok: true,
+      json: parsed.json,
+      raw: parsed.raw,
+      stderr: parsed.stderr,
+      command
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      json: null,
+      command,
+      error: error instanceof Error ? error.message : String(error)
+    };
   }
-  return parsed;
 }
 
 function asRecord(value: JsonValue | null): Record<string, JsonValue> {
@@ -270,23 +311,23 @@ export async function checkWeiboCliInstalled(): Promise<{
     };
   }
 
-  try {
-    const result = await runWhitelistedCli("version");
-    return {
-      installed: true,
-      bin: getWeiboCliBin(),
-      mock: false,
-      version: result.raw || (typeof result.json === "string" ? result.json : undefined),
-      raw: result.raw
-    };
-  } catch (error) {
+  const result = await runRealCli("version");
+  if (!result.ok) {
     return {
       installed: false,
       bin: getWeiboCliBin(),
       mock: false,
-      error: error instanceof Error ? error.message : String(error)
+      error: result.error
     };
   }
+
+  return {
+    installed: true,
+    bin: getWeiboCliBin(),
+    mock: false,
+    version: result.raw || (typeof result.json === "string" ? result.json : undefined),
+    raw: result.raw
+  };
 }
 
 export async function getAuthStatus(): Promise<{
@@ -306,35 +347,44 @@ export async function getAuthStatus(): Promise<{
     };
   }
 
-  try {
-    const result = await runWhitelistedCli("authStatus");
-    const record = asRecord(result.json);
-    const authenticated =
-      record.authenticated === true ||
-      record.loggedIn === true ||
-      record.logged_in === true ||
-      record.status === "authenticated" ||
-      record.status === "logged_in";
+  // Try auth status first, fallback to auth whoami
+  let result = await runRealCli("authStatus");
 
-    return {
-      authenticated,
-      mock: false,
-      raw: result.json ?? result.raw ?? null
-    };
-  } catch (error) {
+  if (!result.ok && result.error?.toLowerCase().includes("unknown command")) {
+    result = await runRealCli("authWhoami");
+  }
+
+  if (!result.ok) {
     return {
       authenticated: false,
       mock: false,
-      raw: null,
-      error: error instanceof Error ? error.message : String(error)
+      raw: result.raw ?? null,
+      error: result.error
     };
   }
+
+  const record = asRecord(result.json);
+  const authenticated = Boolean(
+    record.authenticated === true ||
+    record.loggedIn === true ||
+    record.logged_in === true ||
+    record.status === "authenticated" ||
+    record.status === "logged_in" ||
+    (record.id && record.screen_name) // whoami returns user object when authenticated
+  );
+
+  return {
+    authenticated,
+    mock: false,
+    raw: result.json ?? result.raw ?? null
+  };
 }
 
 export async function getCurrentUser(): Promise<{
   user: WeiboUser;
   mock: boolean;
   rateLimit: RateLimitStatus;
+  error?: string;
 }> {
   consumeDataCall();
 
@@ -355,7 +405,16 @@ export async function getCurrentUser(): Promise<{
     };
   }
 
-  const result = await runWhitelistedCli("currentUser");
+  const result = await runRealCli("currentUser");
+  if (!result.ok) {
+    return {
+      user: normalizeUser(result.raw ?? null),
+      mock: false,
+      rateLimit: getRateLimitStatus(),
+      error: result.error
+    };
+  }
+
   return {
     user: normalizeUser(result.json ?? result.raw ?? null),
     mock: false,
@@ -368,6 +427,7 @@ export async function syncMyPosts(limit?: number): Promise<{
   mock: boolean;
   raw: JsonValue | string | null;
   rateLimit: RateLimitStatus;
+  error?: string;
 }> {
   consumeDataCall();
 
@@ -384,7 +444,17 @@ export async function syncMyPosts(limit?: number): Promise<{
     };
   }
 
-  const result = await runWhitelistedCli("myPosts", limit);
+  const result = await runRealCli("myPosts", limit);
+  if (!result.ok) {
+    return {
+      posts: [],
+      mock: false,
+      raw: result.raw ?? null,
+      rateLimit: getRateLimitStatus(),
+      error: result.error
+    };
+  }
+
   const rawPosts = extractPostList(result.json);
   return {
     posts: rawPosts.map((post, index) => normalizePost(post, index)),

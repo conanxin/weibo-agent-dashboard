@@ -37,22 +37,44 @@ export async function createApp(options: { logger?: boolean } = {}) {
   }));
 
   app.get("/api/weibo/status", async () => {
-    const [cli, auth] = await Promise.all([checkWeiboCliInstalled(), getAuthStatus()]);
-    return {
-      cli,
-      auth,
-      rateLimit: getRateLimitStatus(),
-      local: getDashboardStats(db)
-    };
+    try {
+      const [cli, auth] = await Promise.all([checkWeiboCliInstalled(), getAuthStatus()]);
+      return {
+        cli,
+        auth,
+        rateLimit: getRateLimitStatus(),
+        local: getDashboardStats(db)
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return {
+        cli: { installed: false, bin: "weibo-cli", mock: false, error: message },
+        auth: { authenticated: false, mock: false, raw: null, error: message },
+        rateLimit: getRateLimitStatus(),
+        local: getDashboardStats(db),
+        error: `Status check failed: ${message}`
+      };
+    }
   });
 
   app.get("/api/weibo/me", async (_request, reply) => {
     try {
-      return await getCurrentUser();
+      const result = await getCurrentUser();
+      if (result.error) {
+        reply.code(503);
+        return {
+          error: result.error,
+          user: result.user,
+          mock: result.mock,
+          rateLimit: result.rateLimit
+        };
+      }
+      return result;
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       reply.code(429);
       return {
-        error: error instanceof Error ? error.message : String(error),
+        error: message,
         rateLimit: getRateLimitStatus()
       };
     }
@@ -66,6 +88,18 @@ export async function createApp(options: { logger?: boolean } = {}) {
     const limit = Number.isFinite(request.body?.limit) ? Number(request.body.limit) : 20;
     try {
       const result = await syncMyPosts(limit);
+      if (result.error) {
+        logSync(db, "weibo:sync-my-posts", "error", result.error);
+        reply.code(503);
+        return {
+          error: result.error,
+          posts: result.posts,
+          mock: result.mock,
+          raw: result.raw,
+          rateLimit: result.rateLimit,
+          local: getDashboardStats(db)
+        };
+      }
       const count = upsertPosts(db, result.posts);
       logSync(db, "weibo:sync-my-posts", "success", `Synced ${count} post(s).`);
       return {
