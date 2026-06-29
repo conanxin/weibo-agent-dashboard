@@ -20,6 +20,11 @@
 - Public demo health check script.
 - Dashboard and Settings make static mock mode visible.
 
+## v0.2.2 Showcase Screenshots
+
+- README screenshot placeholders replaced with captured mock demo screenshots.
+- Screenshot capture script added for repeatable showcase updates.
+
 ## Next
 
 - Adapt whitelist commands to the exact official Weibo CLI command shape.

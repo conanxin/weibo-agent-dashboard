@@ -1,6 +1,6 @@
 {
   "name": "weibo-agent-dashboard",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "description": "Free-first personal Weibo content dashboard with a whitelisted Weibo CLI bridge.",
   "type": "module",
@@ -16,13 +16,15 @@
     "lint": "npm run lint --workspaces --if-present",
     "test:smoke": "npm run build && node scripts/smoke-test.mjs",
     "probe:weibo-cli": "node scripts/probe-weibo-cli.mjs",
-    "check:public-demo": "node scripts/check-public-demo.mjs"
+    "check:public-demo": "node scripts/check-public-demo.mjs",
+    "screenshots": "node scripts/capture-screenshots.mjs"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
+    "playwright": "^1.61.1",
     "typescript": "^5.8.3"
   }
 }

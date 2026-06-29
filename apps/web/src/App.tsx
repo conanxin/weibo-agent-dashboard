@@ -139,7 +139,7 @@ export default function App() {
             <p>Free-first personal Weibo content workspace powered by Weibo CLI</p>
             <div className="badge-row" aria-label="Project mode">
               <span className="badge">Free Mode</span>
-              <span className="badge">{health?.mockMode || frontendMockMode ? "Mock Mode" : "Real CLI Mode"}</span>
+              <span className="badge">{health?.mockMode || frontendMockMode ? "GitHub Pages Mock Demo" : "Real CLI Mode"}</span>
             </div>
           </div>
           <div className="topbar-actions">

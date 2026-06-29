@@ -11,27 +11,19 @@ Weibo Agent Dashboard is a small personal open-source project for syncing your o
 
 Dashboard:
 
-```text
-[screenshot placeholder: CLI status, auth status, local post count, rate limit]
-```
+![Dashboard screenshot](docs/screenshots/dashboard.png)
 
 Posts:
 
-```text
-[screenshot placeholder: searchable post archive, raw JSON, export buttons]
-```
+![Posts screenshot](docs/screenshots/posts.png)
 
 Analytics:
 
-```text
-[screenshot placeholder: keyword frequency, averages, topic suggestions]
-```
+![Analytics screenshot](docs/screenshots/analytics.png)
 
 Drafts:
 
-```text
-[screenshot placeholder: draft generator and copy buttons]
-```
+![Drafts screenshot](docs/screenshots/drafts.png)
 
 ## Core Features
 
@@ -233,6 +225,14 @@ v0.2.1 hardens the public demo path:
 - Dashboard and Settings clearly identify GitHub Pages as Mock Demo mode.
 - `npm run check:public-demo` verifies README links, dist files, asset references, and Pages workflow settings without network access.
 
+## Showcase Screenshots (v0.2.2)
+
+v0.2.2 adds real README screenshots captured from the static mock demo:
+
+```bash
+npm run screenshots
+```
+
 ## Tencent Cloud
 
 The full backend version can later run on a small Tencent Cloud server. See [docs/DEPLOY_TENCENT_CLOUD.md](docs/DEPLOY_TENCENT_CLOUD.md).
@@ -254,7 +254,8 @@ This project intentionally avoids Docker, Nginx, HTTPS, backups, and rollback wo
 | v0.1.0 | Mock-first local MVP | Complete |
 | v0.1.1 | Open-source showcase + GitHub Pages demo | Complete |
 | v0.2.0 | Real Weibo CLI read-only smoke test | Complete |
-| v0.2.1 | Public demo health and GitHub Pages hardening | Current |
+| v0.2.1 | Public demo health and GitHub Pages hardening | Complete |
+| v0.2.2 | Showcase screenshots | Current |
 | v0.3.0 | Tencent Cloud deployment | Planned |
 | v0.4.0 | AI draft enhancement | Planned |
 | v0.5.0 | Hermes / OpenClaw Agent workflow integration | Planned |

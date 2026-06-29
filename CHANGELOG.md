@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.2
+
+- Added showcase screenshots.
+- Added screenshot capture script.
+- Replaced README screenshot placeholders with real mock demo images.
+
 ## v0.2.1
 
 - Hardened GitHub Pages public demo configuration with explicit `VITE_BASE_PATH`.
