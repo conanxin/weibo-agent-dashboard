@@ -114,7 +114,7 @@ When `VITE_MOCK_MODE=1`, `apps/web` does not call the backend. It renders built-
 
 ## GitHub Pages Static Demo
 
-GitHub Pages can only run the mock demo because it is a static hosting environment. It cannot run the Fastify server, create or read SQLite databases, access local `.env` files, or execute `weibo-cli`.
+GitHub Pages can only run the mock demo because it is a static hosting environment. It cannot run the Fastify server, create or read SQLite databases, access local `.env` files, or execute `weibo`.
 
 The Pages workflow builds only `apps/web` with:
 
@@ -152,69 +152,109 @@ The project assumes a conservative free-tier posture:
 
 See [docs/FREE_MODE.md](docs/FREE_MODE.md).
 
-## Real CLI Smoke Test (v0.2.0)
+## Real CLI Smoke Test (v0.4.0)
 
-The project includes a probe script to detect your local `weibo-cli` installation and test which commands are available:
+The project includes a probe script and a read-only smoke test for the real Weibo CLI bridge.
+
+### Probe — detect the binary and read-only commands
 
 ```bash
 npm run probe:weibo-cli
+# or with an explicit binary
+WEIBO_CLI_BIN=weibo npm run probe:weibo-cli
 ```
 
-This outputs:
+The probe detects which CLI binary is present (`weibo`, `weibo-cli`, or `wb`) and refuses to shadow wandb. It then probes a prioritized set of read-only commands using `--output json` (the official flag, not legacy `--json`):
 
-- Whether `weibo-cli` is installed.
-- Which commands are available.
-- Which commands require authentication.
-- Whether commands return JSON or raw text.
-- Recommended next steps.
+- `weibo version`
+- `weibo doctor`
+- `weibo doctor --output json`
+- `weibo auth --help`
+- `weibo auth whoami`
+- `weibo auth whoami --output json`
+- `weibo me`
+- `weibo me --output json`
+- `weibo commands list`
+- `weibo commands list --output json`
 
-Switching to real CLI mode:
+It also probes legacy shapes (`auth status`, `posts mine`, `user timeline`) as informational, downgraded candidates. The probe writes a structured JSON report to `reports/weibo-cli-probe-latest.json`.
 
-1. Install and authenticate the official Weibo CLI:
+Readiness categories:
+
+| Category | Meaning |
+| --- | --- |
+| `CLI_NOT_FOUND` | No Weibo CLI on `PATH`. |
+| `WAND_DETECTED` | Only `wb` (Weights & Biases) was found; install weibo independently. |
+| `CLI_INSTALLED_BUT_NOT_READY` | Binary works but `doctor.ready=false` (login / developer verification / subscription incomplete). |
+| `CLI_READY_FOR_REAL_CLI_MODE` | `doctor.ready=true`. |
+
+### Smoke — exercise the bridge in real-CLI mode
 
 ```bash
-weibo-cli login
+MOCK_WEIBO=0 WEIBO_CLI_BIN=weibo npm run test:real-cli:smoke
 ```
 
-2. Copy `.env.example` to `.env` and set:
+Outcomes:
+
+- `SKIP` — mock mode active, or CLI not found, or wandb detected.
+- `UNAVAILABLE` — CLI installed but `doctor.ready=false`. **Not a project failure.**
+- `PASS` — `doctor.ready=true`; runs `getAuthStatus`, `getCurrentUser`, and `syncMyPosts(5)`.
+
+In v0.4.0, `syncMyPosts` is intentionally uncalibrated and returns `code: COMMAND_NOT_CALIBRATED`. The smoke treats that as an acceptable signal. After login, run `weibo commands list --output json` to discover the right sync shape and update `REAL_CLI_COMMANDS.myPosts`.
+
+### Switching to real CLI mode
+
+1. Install the official CLI independently (do not overwrite `wb` / wandb):
+
+```bash
+npm install -g @weibo-ai/weibo-cli --prefix ~/.local/weibo-cli
+ln -sf ~/.local/weibo-cli/bin/weibo ~/.local/bin/weibo
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+2. Log in:
+
+```bash
+weibo auth login            # browser
+weibo auth login --device   # SSH / headless / CI
+```
+
+If you see `SLOW_DOWN`, wait **2–5 minutes** and retry.
+
+3. Copy `.env.example` to `.env` and set:
 
 ```env
 MOCK_WEIBO=0
 FREE_MODE=1
+WEIBO_CLI_BIN=weibo
 ```
 
-3. Run the probe:
+4. Run the probe and smoke test:
 
 ```bash
-npm run probe:weibo-cli
+WEIBO_CLI_BIN=weibo npm run probe:weibo-cli
+MOCK_WEIBO=0 WEIBO_CLI_BIN=weibo npm run test:real-cli:smoke
 ```
 
-4. Start the server:
+5. Build and start:
 
 ```bash
 npm run build
 npm run start
 ```
 
-v0.2.0 remains read-only. It does not post, comment, repost, search the public network, fetch hot searches, or monitor competitor accounts.
+v0.4.0 remains read-only. It does not post, comment, repost, search the public network, fetch hot searches, or monitor competitor accounts.
 
 ## CLI Command Calibration
 
-The current real CLI commands are assumptions. They must be calibrated against the official CLI available on your machine.
+`REAL_CLI_COMMANDS` in `packages/weibo-bridge/src/index.ts` is calibrated against the official Weibo CLI:
 
-Run:
+- `weibo doctor --output json` — canonical readiness signal.
+- `weibo auth whoami --output json` — current authenticated user (primary).
+- `weibo me --output json` — fallback for older CLI builds.
+- `myPosts` — intentionally uncalibrated in v0.4.0. Returns `COMMAND_NOT_CALIBRATED` until you log in, run `weibo commands list --output json`, and update the mapping.
 
-```bash
-npm run probe:weibo-cli
-```
-
-Then update `REAL_CLI_COMMANDS` in:
-
-```text
-packages/weibo-bridge/src/index.ts
-```
-
-See [docs/WEIBO_CLI_ADAPTER.md](docs/WEIBO_CLI_ADAPTER.md).
+See [docs/WEIBO_CLI_ADAPTER.md](docs/WEIBO_CLI_ADAPTER.md) for the full mapping, the readiness categories, the SLOW_DOWN recovery flow, and the redaction policy.
 
 ## Public Demo Health (v0.2.1)
 
@@ -281,8 +321,8 @@ This project intentionally avoids Docker, Nginx, HTTPS, backups, and rollback wo
 | v0.2.0 | Real Weibo CLI read-only smoke test | Complete |
 | v0.2.1 | Public demo health and GitHub Pages hardening | Complete |
 | v0.2.2 | Showcase screenshots | Complete |
-| v0.3.0 | Tencent Cloud Lite deployment | Current |
-| v0.4.0 | Real Weibo CLI calibration | Planned |
+| v0.3.0 | Tencent Cloud Lite deployment | Complete |
+| v0.4.0 | Real Weibo CLI calibration | Current |
 | v0.5.0 | AI draft enhancement / content intelligence | Planned |
 
 See [docs/ROADMAP.md](docs/ROADMAP.md).

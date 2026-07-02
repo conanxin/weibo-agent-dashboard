@@ -1,0 +1,243 @@
+{
+  "version": "0.4.0",
+  "generatedAt": "2026-07-02T13:38:06.104Z",
+  "finishedAt": "2026-07-02T13:38:08.969Z",
+  "env": {
+    "WEIBO_CLI_BIN": "weibo"
+  },
+  "resolution": {
+    "resolvedBin": "weibo",
+    "source": "env",
+    "wandbDetected": false,
+    "envOverrideIsWandb": false,
+    "envOverrideNotFound": false,
+    "attempted": [
+      {
+        "candidate": "weibo",
+        "kind": "weibo",
+        "identity": "weibo",
+        "version": "0.8.2"
+      }
+    ]
+  },
+  "overall": {
+    "statusCategory": "CLI_INSTALLED_BUT_NOT_READY",
+    "ready": false,
+    "message": "CLI installed, auth/platform readiness incomplete. Run `weibo auth login` and complete developer verification and subscription.",
+    "steps": {
+      "login": false,
+      "developerVerification": false,
+      "subscription": false
+    }
+  },
+  "commands": [
+    {
+      "key": "version",
+      "description": "CLI version (canonical install name)",
+      "command": "weibo version",
+      "available": true,
+      "exitCode": 0,
+      "durationMs": 291,
+      "stdoutPreview": "0.8.2",
+      "stderrPreview": "",
+      "parsedJson": null,
+      "jsonParseOk": false,
+      "statusCategory": "AVAILABLE_RAW",
+      "legacy": false,
+      "timedOut": false
+    },
+    {
+      "key": "doctor",
+      "description": "CLI doctor (human-readable readiness)",
+      "command": "weibo doctor",
+      "available": true,
+      "exitCode": 0,
+      "durationMs": 184,
+      "stdoutPreview": "\n\u001b[1m使用准备检查\u001b[0m\n------------------------------------------\n\u001b[33m×\u001b[0m 登录账号\n\u001b[33m×\u001b[0m 完成开发者认证\n\u001b[33m×\u001b[0m 开通套餐\n\n下一步: weibo-cli auth login\n",
+      "stderrPreview": "",
+      "parsedJson": null,
+      "jsonParseOk": false,
+      "statusCategory": "AVAILABLE_RAW",
+      "legacy": false,
+      "timedOut": false
+    },
+    {
+      "key": "doctorJson",
+      "description": "CLI doctor JSON (canonical readiness signal)",
+      "command": "weibo doctor --output json",
+      "available": true,
+      "exitCode": 0,
+      "durationMs": 169,
+      "stdoutPreview": "{\n  \"ready\": false,\n  \"steps\": {\n    \"login\": false,\n    \"developerVerification\": false,\n    \"subscription\": false\n  },\n  \"nextAction\": {\n    \"command\": \"weibo-cli auth login\",\n    \"message\": \"请先登录账号，然后重新运行 weibo-cli doctor。\"\n  }\n}",
+      "stderrPreview": "",
+      "parsedJson": {
+        "ready": false,
+        "steps": {
+          "login": false,
+          "developerVerification": false,
+          "subscription": false
+        },
+        "nextAction": {
+          "command": "weibo-cli auth login",
+          "message": "请先登录账号，然后重新运行 weibo-cli doctor。"
+        }
+      },
+      "jsonParseOk": true,
+      "statusCategory": "AVAILABLE_JSON",
+      "legacy": false,
+      "timedOut": false
+    },
+    {
+      "key": "authHelp",
+      "description": "Auth command help",
+      "command": "weibo auth --help",
+      "available": true,
+      "exitCode": 0,
+      "durationMs": 146,
+      "stdoutPreview": "Authentication and token management\n\nUsage:\n  weibo-cli auth <command>\n\nCommands:\n  login          Authenticate via browser or device code (default: browser)\n  login --device Authenticate using device code (for SSH, remote, CI environments)…",
+      "stderrPreview": "",
+      "parsedJson": null,
+      "jsonParseOk": false,
+      "statusCategory": "AVAILABLE_RAW",
+      "legacy": false,
+      "timedOut": false
+    },
+    {
+      "key": "authWhoami",
+      "description": "Auth whoami (text)",
+      "command": "weibo auth whoami",
+      "available": false,
+      "exitCode": 1,
+      "durationMs": 182,
+      "stdoutPreview": "",
+      "stderrPreview": "缺少登录令牌。请先运行 `weibo-cli auth login`，或在非交互环境使用 `weibo-cli auth login --device`。",
+      "parsedJson": null,
+      "jsonParseOk": false,
+      "statusCategory": "NOT_AUTHENTICATED",
+      "legacy": false,
+      "timedOut": false
+    },
+    {
+      "key": "authWhoamiJson",
+      "description": "Auth whoami JSON",
+      "command": "weibo auth whoami --output json",
+      "available": false,
+      "exitCode": 1,
+      "durationMs": 168,
+      "stdoutPreview": "",
+      "stderrPreview": "缺少登录令牌。请先运行 `weibo-cli auth login`，或在非交互环境使用 `weibo-cli auth login --device`。",
+      "parsedJson": null,
+      "jsonParseOk": false,
+      "statusCategory": "NOT_AUTHENTICATED",
+      "legacy": false,
+      "timedOut": false
+    },
+    {
+      "key": "me",
+      "description": "Me (text)",
+      "command": "weibo me",
+      "available": false,
+      "exitCode": 1,
+      "durationMs": 170,
+      "stdoutPreview": "",
+      "stderrPreview": "缺少登录令牌。请先运行 `weibo-cli auth login`，或在非交互环境使用 `weibo-cli auth login --device`。",
+      "parsedJson": null,
+      "jsonParseOk": false,
+      "statusCategory": "NOT_AUTHENTICATED",
+      "legacy": false,
+      "timedOut": false
+    },
+    {
+      "key": "meJson",
+      "description": "Me JSON",
+      "command": "weibo me --output json",
+      "available": false,
+      "exitCode": 1,
+      "durationMs": 161,
+      "stdoutPreview": "",
+      "stderrPreview": "缺少登录令牌。请先运行 `weibo-cli auth login`，或在非交互环境使用 `weibo-cli auth login --device`。",
+      "parsedJson": null,
+      "jsonParseOk": false,
+      "statusCategory": "NOT_AUTHENTICATED",
+      "legacy": false,
+      "timedOut": false
+    },
+    {
+      "key": "commandsList",
+      "description": "commands list (text)",
+      "command": "weibo commands list",
+      "available": false,
+      "exitCode": 1,
+      "durationMs": 163,
+      "stdoutPreview": "",
+      "stderrPreview": "缺少登录令牌。请先运行 `weibo-cli auth login`，或在非交互环境使用 `weibo-cli auth login --device`。",
+      "parsedJson": null,
+      "jsonParseOk": false,
+      "statusCategory": "NOT_AUTHENTICATED",
+      "legacy": false,
+      "timedOut": false
+    },
+    {
+      "key": "commandsListJson",
+      "description": "commands list JSON",
+      "command": "weibo commands list --output json",
+      "available": false,
+      "exitCode": 1,
+      "durationMs": 161,
+      "stdoutPreview": "",
+      "stderrPreview": "缺少登录令牌。请先运行 `weibo-cli auth login`，或在非交互环境使用 `weibo-cli auth login --device`。",
+      "parsedJson": null,
+      "jsonParseOk": false,
+      "statusCategory": "NOT_AUTHENTICATED",
+      "legacy": false,
+      "timedOut": false
+    }
+  ],
+  "legacyCommands": [
+    {
+      "key": "authStatusLegacy",
+      "description": "Legacy auth status (downgraded)",
+      "command": "weibo auth status --output json",
+      "available": false,
+      "exitCode": 1,
+      "durationMs": 157,
+      "stdoutPreview": "",
+      "stderrPreview": "Usage: weibo-cli auth <login|whoami|token|revoke|logout> (run --help for more options)",
+      "parsedJson": null,
+      "jsonParseOk": false,
+      "statusCategory": "CLI_ERROR",
+      "legacy": true,
+      "timedOut": false
+    },
+    {
+      "key": "postsMineLegacy",
+      "description": "Legacy posts mine (downgraded)",
+      "command": "weibo posts mine --limit 3 --output json",
+      "available": false,
+      "exitCode": 1,
+      "durationMs": 173,
+      "stdoutPreview": "",
+      "stderrPreview": "缺少登录令牌。请先运行 `weibo-cli auth login`，或在非交互环境使用 `weibo-cli auth login --device`。",
+      "parsedJson": null,
+      "jsonParseOk": false,
+      "statusCategory": "NOT_AUTHENTICATED",
+      "legacy": true,
+      "timedOut": false
+    },
+    {
+      "key": "userTimelineLegacy",
+      "description": "Legacy user timeline (downgraded)",
+      "command": "weibo user timeline --limit 3 --output json",
+      "available": false,
+      "exitCode": 1,
+      "durationMs": 205,
+      "stdoutPreview": "",
+      "stderrPreview": "缺少登录令牌。请先运行 `weibo-cli auth login`，或在非交互环境使用 `weibo-cli auth login --device`。",
+      "parsedJson": null,
+      "jsonParseOk": false,
+      "statusCategory": "NOT_AUTHENTICATED",
+      "legacy": true,
+      "timedOut": false
+    }
+  ]
+}

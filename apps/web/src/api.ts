@@ -146,17 +146,27 @@ function mockStatus(): WeiboStatus {
   return {
     cli: {
       installed: true,
-      bin: "weibo-cli",
+      bin: "weibo",
+      resolvedBin: "mock",
       mock: true,
       version: "static-mock"
     },
     auth: {
       authenticated: true,
       mock: true,
+      ready: true,
+      steps: { login: true, developerVerification: true, subscription: true },
       raw: {
         authenticated: true,
         mode: "static mock"
       }
+    },
+    readiness: {
+      installed: true,
+      bin: "weibo",
+      resolvedBin: "mock",
+      mock: true,
+      statusCategory: "MOCK_MODE"
     },
     rateLimit: {
       limit: 4,

@@ -5,6 +5,7 @@ import fastifyStatic from "@fastify/static";
 import {
   checkWeiboCliInstalled,
   getAuthStatus,
+  getCliReadiness,
   getCurrentUser,
   getRateLimitStatus,
   syncMyPosts
@@ -38,18 +39,37 @@ export async function createApp(options: { logger?: boolean } = {}) {
 
   app.get("/api/weibo/status", async () => {
     try {
-      const [cli, auth] = await Promise.all([checkWeiboCliInstalled(), getAuthStatus()]);
+      const [cli, auth, readiness] = await Promise.all([
+        checkWeiboCliInstalled(),
+        getAuthStatus(),
+        getCliReadiness()
+      ]);
       return {
         cli,
         auth,
+        readiness,
         rateLimit: getRateLimitStatus(),
         local: getDashboardStats(db)
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       return {
-        cli: { installed: false, bin: "weibo-cli", mock: false, error: message },
-        auth: { authenticated: false, mock: false, raw: null, error: message },
+        cli: { installed: false, bin: "weibo", mock: false, error: message },
+        auth: {
+          authenticated: false,
+          mock: false,
+          ready: false,
+          steps: {},
+          raw: null,
+          error: message
+        },
+        readiness: {
+          installed: false,
+          bin: "weibo",
+          mock: false,
+          statusCategory: "CLI_NOT_FOUND",
+          error: message
+        },
         rateLimit: getRateLimitStatus(),
         local: getDashboardStats(db),
         error: `Status check failed: ${message}`

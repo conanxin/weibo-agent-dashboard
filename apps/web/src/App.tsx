@@ -420,7 +420,17 @@ function Settings({
       <article className="panel">
         <h3>Weibo CLI</h3>
         <p>Install and sign in with the official Weibo CLI, then set backend `.env` to `MOCK_WEIBO=0` for real local CLI mode.</p>
-        <code>{status?.cli.bin || "weibo-cli"}</code>
+        <code>{status?.cli.bin || "weibo"}</code>
+        {status?.readiness ? (
+          <p className="muted">
+            Readiness: <strong>{status.readiness.statusCategory}</strong>
+            {status.readiness.resolvedBin ? ` (resolved: ${status.readiness.resolvedBin})` : ""}
+            {status.readiness.wandbDetected ? " — wandb detected, not weibo" : ""}
+          </p>
+        ) : null}
+        {status?.auth.nextAction ? (
+          <p className="muted">Next action: <code>{status.auth.nextAction.command}</code> — {status.auth.nextAction.message}</p>
+        ) : null}
       </article>
     </section>
   );
